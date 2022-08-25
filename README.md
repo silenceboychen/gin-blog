@@ -1,3 +1,27 @@
+# gin-blog
+
+使用gin开发个人博客，学习go练手项目，参考： https://github.com/eddycjy/go-gin-example
+
+## 目录介绍
+
+```
+gin-blog/
+├── conf
+├── middleware
+├── models
+├── pkg
+├── routers
+└── runtime
+```
+
+* conf：用于存储配置文件
+* middleware：应用中间件
+* models：应用数据库模型
+* pkg：第三方包
+* routers 路由逻辑处理
+* runtime 应用运行时数据
+
+
 ## 数据库sql
 
 1. 标签表
