@@ -58,6 +58,12 @@ func EditTag(id int, data interface{}) bool {
 	return true
 }
 
+func CleanAllTag() bool {
+	//硬删除要使用 Unscoped()，这是 GORM 的约定
+	db.Unscoped().Where("deleted_on != ?", 0).Delete(&Tag{})
+	return true
+}
+
 //func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 //	scope.SetColumn("CreatedOn", time.Now().Unix())
 //
