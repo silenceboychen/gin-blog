@@ -16,8 +16,11 @@ type auth struct {
 }
 
 func GetAuth(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+	var user models.Auth
+	c.ShouldBind(&user)
+
+	username := user.Username
+	password := user.Password
 
 	valid := validation.Validation{}
 	a := auth{Username: username, Password: password}
@@ -26,6 +29,7 @@ func GetAuth(c *gin.Context) {
 	data := make(map[string]interface{})
 	code := err.INVALID_PARAMS
 	if ok {
+		password = util.Md5(password)
 		isExist := models.CheckAuth(username, password)
 		if isExist {
 			token, e := util.GenerateToken(username, password)
@@ -33,10 +37,8 @@ func GetAuth(c *gin.Context) {
 				code = err.ERROR_AUTH_TOKEN
 			} else {
 				data["token"] = token
-
 				code = err.SUCCESS
 			}
-
 		} else {
 			code = err.ERROR_AUTH
 		}

@@ -84,12 +84,16 @@ func GetArticles(c *gin.Context) {
 
 //新增文章
 func AddArticle(c *gin.Context) {
-	tagId := com.StrTo(c.Query("tag_id")).MustInt()
-	title := c.Query("title")
-	desc := c.Query("desc")
-	content := c.Query("content")
-	createdBy := c.Query("created_by")
-	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
+	var article models.Article
+	c.ShouldBind(&article)
+	//tagId := com.StrTo(c.Query("tag_id")).MustInt()
+	tagId := article.TagID
+	title := article.Title
+	desc := article.Desc
+	content := article.Content
+	createdBy := article.CreatedBy
+	//state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
+	state := article.State
 
 	valid := validation.Validation{}
 	valid.Min(tagId, 1, "tag_id").Message("标签ID必须大于0")
@@ -132,19 +136,18 @@ func AddArticle(c *gin.Context) {
 func EditArticle(c *gin.Context) {
 	valid := validation.Validation{}
 
+	var article models.Article
+	c.ShouldBind(&article)
 	id := com.StrTo(c.Param("id")).MustInt()
-	tagId := com.StrTo(c.Query("tag_id")).MustInt()
-	title := c.Query("title")
-	desc := c.Query("desc")
-	content := c.Query("content")
-	modifiedBy := c.Query("modified_by")
+	//tagId := com.StrTo(c.Query("tag_id")).MustInt()
+	tagId := article.TagID
+	title := article.Title
+	desc := article.Desc
+	content := article.Content
+	modifiedBy := article.ModifiedBy
+	state := article.State
 
-	var state int = -1
-	if arg := c.Query("state"); arg != "" {
-		state = com.StrTo(arg).MustInt()
-		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
-	}
-
+	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 	valid.Min(id, 1, "id").Message("ID必须大于0")
 	valid.MaxSize(title, 100, "title").Message("标题最长为100字符")
 	valid.MaxSize(desc, 255, "desc").Message("简述最长为255字符")

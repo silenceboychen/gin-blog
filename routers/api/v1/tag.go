@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"gin-blog/models"
 	"gin-blog/pkg/err"
 	"gin-blog/pkg/logging"
@@ -49,9 +50,11 @@ func GetTags(c *gin.Context) {
 // @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags [post]
 func AddTag(c *gin.Context) {
-	name := c.Query("name")
-	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
-	createdBy := c.Query("created_by")
+	var tag models.Tag
+	c.ShouldBind(&tag)
+	name := tag.Name
+	state := tag.State
+	createdBy := tag.CreatedBy
 
 	valid := validation.Validation{}
 	valid.Required(name, "name").Message("名称不能为空")
@@ -90,18 +93,18 @@ func AddTag(c *gin.Context) {
 // @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags/{id} [put]
 func EditTag(c *gin.Context) {
+	var tag models.Tag
+	c.ShouldBind(&tag)
+	fmt.Println(tag)
+
 	id := com.StrTo(c.Param("id")).MustInt()
-	name := c.Query("name")
-	modifiedBy := c.Query("modified_by")
+	name := tag.Name
+	modifiedBy := tag.ModifiedBy
 
 	valid := validation.Validation{}
 
-	var state int = -1
-	if arg := c.Query("state"); arg != "" {
-		state = com.StrTo(arg).MustInt()
-		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
-	}
-
+	state := tag.State
+	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 	valid.Required(id, "id").Message("ID不能为空")
 	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
 	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
