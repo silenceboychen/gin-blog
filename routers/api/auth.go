@@ -2,9 +2,10 @@ package api
 
 import (
 	"gin-blog/models"
+	"gin-blog/pkg/app"
 	"gin-blog/pkg/err"
-	"gin-blog/pkg/logging"
 	"gin-blog/pkg/util"
+	"gin-blog/service/auth_service"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -15,42 +16,53 @@ type auth struct {
 	Password string `valid:"Required; MaxSize(50)"`
 }
 
+// @Summary Get Auth
+// @Produce  json
+// @Param username query string true "userName"
+// @Param password query string true "password"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /auth [get]
 func GetAuth(c *gin.Context) {
+	appG := app.Gin{C: c}
+	valid := validation.Validation{}
+
 	var user models.Auth
 	c.ShouldBind(&user)
-
 	username := user.Username
-	password := user.Password
+	password := util.Md5(user.Password)
 
-	valid := validation.Validation{}
 	a := auth{Username: username, Password: password}
 	ok, _ := valid.Valid(&a)
 
-	data := make(map[string]interface{})
-	code := err.INVALID_PARAMS
-	if ok {
-		password = util.Md5(password)
-		isExist := models.CheckAuth(username, password)
-		if isExist {
-			token, e := util.GenerateToken(username, password)
-			if e != nil {
-				code = err.ERROR_AUTH_TOKEN
-			} else {
-				data["token"] = token
-				code = err.SUCCESS
-			}
-		} else {
-			code = err.ERROR_AUTH
-		}
-	} else {
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	if !ok {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusBadRequest, err.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  err.GetMsg(code),
-		"data": data,
+	authService := auth_service.Auth{
+		Username: username,
+		Password: password,
+	}
+	isExist, e := authService.Check()
+	if e != nil {
+		appG.Response(http.StatusInternalServerError, err.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
+		return
+	}
+
+	if !isExist {
+		appG.Response(http.StatusUnauthorized, err.ERROR_AUTH, nil)
+		return
+	}
+
+	token, e := util.GenerateToken(username, password)
+	if e != nil {
+		appG.Response(http.StatusInternalServerError, err.ERROR_AUTH_TOKEN, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, err.SUCCESS, map[string]string{
+		"token": token,
 	})
 }
