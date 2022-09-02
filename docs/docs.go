@@ -361,37 +361,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/tags/import": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Import Image",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Image File",
-                        "name": "image",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/app.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/tags/{id}": {
             "put": {
                 "produces": [
@@ -479,24 +448,59 @@ const docTemplate = `{
             }
         },
         "/auth": {
-            "get": {
+            "post": {
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Get Auth",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "userName",
+                        "description": "username",
                         "name": "username",
-                        "in": "query",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
-                        "type": "string",
                         "description": "password",
                         "name": "password",
-                        "in": "query",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/app.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Import Image",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Image File",
+                        "name": "image",
+                        "in": "formData",
                         "required": true
                     }
                 ],

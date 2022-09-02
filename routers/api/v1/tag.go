@@ -3,6 +3,8 @@ package v1
 import (
 	"gin-blog/pkg/app"
 	"gin-blog/pkg/err"
+	"gin-blog/pkg/export"
+	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/pkg/util"
 	"gin-blog/service/tag_service"
@@ -187,6 +189,51 @@ func DeleteTag(c *gin.Context) {
 
 	if e := tagService.Delete(); e != nil {
 		appG.Response(http.StatusInternalServerError, err.ERROR_DELETE_TAG_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, err.SUCCESS, nil)
+}
+
+func ExportTag(c *gin.Context) {
+	appG := app.Gin{C: c}
+	name := c.PostForm("name")
+	state := -1
+	if arg := c.PostForm("state"); arg != "" {
+		state = com.StrTo(arg).MustInt()
+	}
+
+	tagService := tag_service.Tag{
+		Name:  name,
+		State: state,
+	}
+
+	filename, e := tagService.Export()
+	if e != nil {
+		appG.Response(http.StatusOK, err.ERROR_EXPORT_TAG_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusOK, err.SUCCESS, map[string]string{
+		"export_url":      export.GetExcelFullUrl(filename),
+		"export_save_url": export.GetExcelPath() + filename,
+	})
+}
+
+func ImportTag(c *gin.Context) {
+	appG := app.Gin{C: c}
+
+	file, _, e := c.Request.FormFile("file")
+	if e != nil {
+		logging.Warn(e)
+		appG.Response(http.StatusOK, err.ERROR, nil)
+		return
+	}
+
+	tagService := tag_service.Tag{}
+	e = tagService.Import(file)
+	if e != nil {
+		logging.Warn(e)
+		appG.Response(http.StatusOK, err.ERROR_IMPORT_TAG_FAIL, nil)
 		return
 	}
 

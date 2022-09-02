@@ -20,6 +20,7 @@ type Article struct {
 func ExistArticleByID(id int) (bool, error) {
 	var article Article
 	err := db.Select("id").Where("id = ? and deleted_on = ?", id, 0).First(&article).Error
+	//在 gorm 中，查找不到记录也算一种 “错误” 哦
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}

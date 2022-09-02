@@ -288,7 +288,34 @@ paths:
           schema:
             $ref: '#/definitions/app.Response'
       summary: Update article tag
-  /api/v1/tags/import:
+  /auth:
+    post:
+      parameters:
+      - description: username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.Response'
+      summary: Get Auth
+  /upload:
     post:
       parameters:
       - description: Image File
@@ -308,29 +335,4 @@ paths:
           schema:
             $ref: '#/definitions/app.Response'
       summary: Import Image
-  /auth:
-    get:
-      parameters:
-      - description: userName
-        in: query
-        name: username
-        required: true
-        type: string
-      - description: password
-        in: query
-        name: password
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/app.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/app.Response'
-      summary: Get Auth
 swagger: "2.0"
